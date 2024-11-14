@@ -1,4 +1,4 @@
-package com.example.urdeli.ui.components
+package com.example.urdeli.presentation.department
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.TableColumnWidth
 import com.seanproctor.datatable.material3.PaginatedDataTable
@@ -17,7 +18,8 @@ import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 
 @Composable
 fun DataTable(
-    department: String
+    department: String,
+    viewModel: DepartmentViewModel = viewModel(),
 ) {
     val columns = listOf(
         DataColumn(
@@ -25,8 +27,8 @@ fun DataTable(
         ) {
             Checkbox(
                 modifier = Modifier.padding(8.dp),
-                checked = false,
-                onCheckedChange = null,
+                checked = viewModel.isHeaderSelected,
+                onCheckedChange = { viewModel.onHeaderSelected(it) },
             )
         },
         DataColumn(
@@ -72,27 +74,30 @@ fun DataTable(
         footerBackgroundColor = Color(0xFFFBFBFB),
         state = rememberPaginatedDataTableState(10),
     ) {
-        for (rowIndex in 0 until 100) {
+        viewModel.state.deliItems.forEach { item ->
+            val isRowSelected = viewModel.selectedRows.contains(item.id)
+
             row {
-                onClick = { println("Row clicked: $rowIndex") }
                 cell {
                     Checkbox(
                         modifier = Modifier.padding(8.dp),
-                        checked = false,
-                        onCheckedChange = null
+                        checked = isRowSelected,
+                        onCheckedChange = {
+                            viewModel.onRowSelected(item.id, it)
+                        }
                     )
                 }
                 cell {
-                    Text("Row $rowIndex, column 1")
+                    Text(item.name)
                 }
                 cell {
-                    Text("Row $rowIndex, column 2")
+                    Text(item.unit)
                 }
                 cell {
-                    Text("Row $rowIndex, column 3")
+                    Text("${item.quantity}")
                 }
                 cell {
-                    Text("Row $rowIndex, column 3")
+                    Text("${item.cost}")
                 }
             }
         }

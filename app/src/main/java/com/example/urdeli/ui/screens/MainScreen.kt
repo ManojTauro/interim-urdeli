@@ -34,9 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.urdeli.NavigationRailItem
-import com.example.urdeli.ui.components.DataTable
+import com.example.urdeli.presentation.department.DataTable
 import com.example.urdeli.ui.components.NavigationSideBar
-import com.example.urdeli.ui.components.TableHeader
+import com.example.urdeli.presentation.department.TableHeader
 import kotlinx.coroutines.launch
 
 @Composable
@@ -122,7 +122,6 @@ fun MainScreen() {
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 12.dp, vertical = 24.dp),
-                        shadowElevation = 2.dp,
                         shape = RoundedCornerShape(16.dp),
                         color = Color(0xFFFBFBFB)
                     ) {

@@ -70,5 +70,5 @@ dependencies {
 
     implementation("androidx.compose.material3:material3-window-size-class:1.1.1")
     implementation(libs.data.table.material3)
-
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }
