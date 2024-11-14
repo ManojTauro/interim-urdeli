@@ -49,14 +49,14 @@ fun DataTable(
             width = TableColumnWidth.Fixed(200.dp),
         ) {
             Text(
-                text = "Quantity",
+                text = "Cost",
             )
         },
         DataColumn(
             width = TableColumnWidth.Fixed(200.dp),
         ) {
             Text(
-                text = "Cost",
+                text = "Quantity",
             )
         },
     )
@@ -75,7 +75,7 @@ fun DataTable(
         state = rememberPaginatedDataTableState(10),
     ) {
         viewModel.state.deliItems.forEach { item ->
-            val isRowSelected = viewModel.selectedRows.contains(item.id)
+            val isRowSelected = viewModel.selectedRows.contains(item.itemId)
 
             row {
                 cell {
@@ -83,7 +83,7 @@ fun DataTable(
                         modifier = Modifier.padding(8.dp),
                         checked = isRowSelected,
                         onCheckedChange = {
-                            viewModel.onRowSelected(item.id, it)
+                            viewModel.onRowSelected(item.itemId, it)
                         }
                     )
                 }
@@ -91,14 +91,15 @@ fun DataTable(
                     Text(item.name)
                 }
                 cell {
-                    Text(item.unit)
-                }
-                cell {
-                    Text("${item.quantity}")
+                    item.unit?.let { Text(it) }
                 }
                 cell {
                     Text("${item.cost}")
                 }
+                cell {
+//                    Text("${item.quantity}")
+                }
+
             }
         }
     }
