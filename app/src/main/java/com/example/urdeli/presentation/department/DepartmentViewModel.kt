@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.urdeli.data.remote.UrdeliRepositoryImpl
-import com.example.urdeli.domain.model.DeliItem
 import com.example.urdeli.domain.repository.UrdeliRepository
 import com.example.urdeli.util.Resource
 import kotlinx.coroutines.launch
@@ -21,20 +20,6 @@ class DepartmentViewModel(application: Application) : AndroidViewModel(applicati
     var state by mutableStateOf(DepartmentState())
 
     init {
-        val mutableDeliItems = state.deliItems.toMutableList()
-        mutableDeliItems.addAll(List(10) {
-            DeliItem(
-                it,
-                "Bread",
-                "KG",
-                10.0
-            )
-        })
-
-        state = state.copy(
-            deliItems = mutableDeliItems
-        )
-
         getDeliItems()
     }
 
@@ -62,6 +47,18 @@ class DepartmentViewModel(application: Application) : AndroidViewModel(applicati
             state.deliItems.take(rowCount + 1).forEach { item -> _selectedRows.add(item.itemId) }
 
         updatedSelectedRow()
+    }
+
+    fun updateQuantity(itemId: Int, newQuantity: String) {
+        val quantity = newQuantity.toIntOrNull() ?: return
+
+        if (quantity < 0) return
+
+        state = state.copy(
+            deliItemsQuantity = state.deliItemsQuantity.toMutableMap().apply {
+                this[itemId] = (this[itemId] ?: 0) + quantity
+            }
+        )
     }
 
     private fun getDeliItems(

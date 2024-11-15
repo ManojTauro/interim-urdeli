@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 )
 data class DeliItemEntity(
     val name: String,
-    val unit: String?,
+    val unit: String,
     val cost: Double,
     @PrimaryKey @ColumnInfo(name = "item_id") val itemId: Int,
     @ColumnInfo(name = "department_id") val departmentId: Int,
