@@ -16,10 +16,24 @@ class DepartmentViewModel(application: Application) : AndroidViewModel(applicati
     private val context = getApplication<Application>().applicationContext
     val rowCount = 100
     private val repository: UrdeliRepository = UrdeliRepositoryImpl(context)
-
     var state by mutableStateOf(DepartmentState())
 
+    val departments = mapOf(
+        1 to "Bakery Bread",
+        2 to "Bakery Cakes",
+        3 to "Deli Meats",
+        4 to "Hot Deli",
+        5 to "Deli Salads",
+        6 to "Sauces/Spices",
+        7 to "Ice Cream Bar",
+        8 to "Bakery Supplies",
+        9 to "Bakery"
+    )
+
     init {
+        state = state.copy(
+            departments = departments
+        )
         getDeliItems()
     }
 
@@ -59,6 +73,11 @@ class DepartmentViewModel(application: Application) : AndroidViewModel(applicati
                 this[itemId] = (this[itemId] ?: 0) + quantity
             }
         )
+    }
+
+    fun onDepartmentSelected(departmentId: Int) {
+        state = state.copy(departmentId = departmentId)
+        getDeliItems(departmentId)
     }
 
     private fun getDeliItems(

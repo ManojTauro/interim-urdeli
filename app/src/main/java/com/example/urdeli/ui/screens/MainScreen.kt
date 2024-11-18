@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import com.example.urdeli.NavigationRailItem
 import com.example.urdeli.presentation.department.DataTable
 import com.example.urdeli.ui.components.NavigationSideBar
-import com.example.urdeli.presentation.department.TableHeader
 import kotlinx.coroutines.launch
 
 @Composable
@@ -70,79 +69,78 @@ fun MainScreen() {
 
     // Modal Navigation Drawer that opens with secondary destinations
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = Color(0xFFF2F2F2)
+//    ModalNavigationDrawer(
+//        drawerState = drawerState,
+//        drawerContent = {
+//            ModalDrawerSheet(
+//                drawerContainerColor = Color(0xFFF2F2F2)
+//            ) {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(16.dp)
+//                ) {
+//                    Text(text = "Departments", style = MaterialTheme.typography.titleMedium)
+//
+//                    Spacer(modifier = Modifier.height(16.dp))
+//
+//                    sideDrawerItems.forEachIndexed { index, item ->
+//                        NavigationDrawerItem(
+//                            label = {
+//                                Text(text = item)
+//                            },
+//                            selected = selectedSideDrawerItem == index,
+//                            onClick = {
+//                                selectedSideDrawerItem = index
+//                                scope.launch { drawerState.close() }
+//                            },
+//                            modifier = Modifier
+//                                .padding(NavigationDrawerItemDefaults.ItemPadding)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    ) {
+//    }
+
+    Scaffold(
+        containerColor = Color(0xFFF2F2F2),
+        content = { _ ->
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
             ) {
-                Column(
+                NavigationSideBar(
+                    items = railItems,
+                    selectedItem = selectedRailItem,
+                    onNavigate = { selectedRailItem = it },
+                    drawerState = drawerState,
+                )
+
+                // Main content based on selected rail item
+                Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
+                        .padding(horizontal = 12.dp, vertical = 24.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color(0xFFFBFBFB)
                 ) {
-                    Text(text = "Departments", style = MaterialTheme.typography.titleMedium)
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    sideDrawerItems.forEachIndexed { index, item ->
-                        NavigationDrawerItem(
-                            label = {
-                                Text(text = item)
-                            },
-                            selected = selectedSideDrawerItem == index,
-                            onClick = {
-                                selectedSideDrawerItem = index
-                                scope.launch { drawerState.close() }
-                            },
-                            modifier = Modifier
-                                .padding(NavigationDrawerItemDefaults.ItemPadding)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 32.dp, vertical = 20.dp)
+                    ) {
+                        Text(
+                            text = "Store Name",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
+                        Spacer(modifier = Modifier.height(40.dp))
+                        DataTable()
                     }
                 }
             }
         }
-    ) {
-        Scaffold(
-            containerColor = Color(0xFFF2F2F2),
-            content = { _ ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    NavigationSideBar(
-                        items = railItems,
-                        selectedItem = selectedRailItem,
-                        onNavigate = { selectedRailItem = it },
-                        drawerState = drawerState,
-                    )
-
-                    // Main content based on selected rail item
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp, vertical = 24.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = Color(0xFFFBFBFB)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 32.dp, vertical = 20.dp)
-                        ) {
-                            Text(
-                                text = "Store Name",
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(modifier = Modifier.height(32.dp))
-                            TableHeader()
-                            Spacer(modifier = Modifier.height(8.dp))
-                            DataTable(sideDrawerItems[selectedRailItem])
-                        }
-                    }
-                }
-            }
-        )
-    }
+    )
 }

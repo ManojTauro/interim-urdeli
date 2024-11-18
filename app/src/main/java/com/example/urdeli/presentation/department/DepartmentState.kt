@@ -5,6 +5,7 @@ import com.example.urdeli.domain.model.DeliItem
 data class DepartmentState(
     val deliItems: List<DeliItem> = emptyList(),
     val deliItemsQuantity: Map<Int, Int> = emptyMap(),
+    val departments: Map<Int, String> = emptyMap(),
     val departmentId: Int = 0,
     val searchQuery: String = "",
     val isLoading: Boolean = false,

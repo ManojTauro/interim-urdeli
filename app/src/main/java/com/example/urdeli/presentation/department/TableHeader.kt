@@ -2,6 +2,7 @@ package com.example.urdeli.presentation.department
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,15 +16,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,18 +43,25 @@ import androidx.compose.ui.unit.sp
 import com.example.urdeli.R
 
 @Composable
-fun TableHeader() {
+fun TableHeader(
+    onSelectedDepartment: (departmentId: Int) -> Unit,
+    departments: Map<Int, String>
+) {
+    var selectedDepartment by remember { mutableStateOf("Bakery Bread") }
+
     Row(
         modifier = Modifier
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "Bakery Bread",
-            modifier = Modifier.weight(1f),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.SemiBold
+        DepartmentSelector(
+            currentDepartment = selectedDepartment,
+            onDepartmentSelected = { department ->
+                onSelectedDepartment(department)
+                selectedDepartment = departments[department] ?: "Bakery Bread"
+            },
+            departments = departments
         )
 
         Row(
@@ -145,5 +161,79 @@ fun SearchBar(
                 }
             }
         )
+    }
+}
+
+@Composable
+fun DepartmentSelector(
+    currentDepartment: String,
+    onDepartmentSelected: (Int) -> Unit,
+    departments: Map<Int, String>
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .width(250.dp)
+            .border(
+                width = 1.dp,
+                color = Color.Gray,
+                shape = RoundedCornerShape(25)
+            )
+            .background(
+                color = Color.Transparent,
+                shape = RoundedCornerShape(25.dp)
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable { expanded = true }
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = currentDepartment,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
+            Icon(
+                imageVector = if (expanded)
+                    Icons.Filled.KeyboardArrowUp
+                else
+                    Icons.Filled.KeyboardArrowDown,
+                contentDescription = "Select department",
+                modifier = Modifier.size(24.dp),
+                tint = Color.Black
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(Color.Black)
+                .width(250.dp) // Increased width for dropdown
+        ) {
+            departments.forEach { (id, name) ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = name,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    },
+                    onClick = {
+                        onDepartmentSelected(id)
+                        expanded = false
+                    },
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .fillMaxWidth()
+                )
+            }
+        }
     }
 }

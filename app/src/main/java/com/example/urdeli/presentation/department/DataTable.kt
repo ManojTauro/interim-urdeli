@@ -44,11 +44,11 @@ import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 
 @Composable
 fun DataTable(
-    department: String,
     viewModel: DepartmentViewModel = viewModel(),
 ) {
     val state = viewModel.state
     var selectedItemId by remember { mutableStateOf<Int?>(null) }
+    var isDropdownVisible by remember { mutableStateOf(false) }
 
     val columns = listOf(
         DataColumn(
@@ -90,7 +90,11 @@ fun DataTable(
         },
     )
 
-    var isDropdownVisible by remember { mutableStateOf(false) }
+    TableHeader(
+        onSelectedDepartment = { departmentId -> viewModel.onDepartmentSelected(departmentId) },
+        departments = state.departments
+    )
+
     PaginatedDataTable(
         modifier = Modifier
             .fillMaxSize()
@@ -129,7 +133,8 @@ fun DataTable(
                 cell {
                     Box {
                         Text(
-                            text = state.deliItemsQuantity[item.itemId]?.toString() ?: "Enter Quantity",
+                            text = state.deliItemsQuantity[item.itemId]?.toString()
+                                ?: "Enter Quantity",
                             modifier = Modifier
                                 .clickable {
                                     selectedItemId = item.itemId
@@ -145,7 +150,12 @@ fun DataTable(
                                 isDropdownVisible = false
                                 selectedItemId = null
                             },
-                            onSave = { newQuantity -> viewModel.updateQuantity(item.itemId, newQuantity) }
+                            onSave = { newQuantity ->
+                                viewModel.updateQuantity(
+                                    item.itemId,
+                                    newQuantity
+                                )
+                            }
                         )
                     }
                 }
