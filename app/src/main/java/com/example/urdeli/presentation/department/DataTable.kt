@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +48,8 @@ import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 fun DataTable(
     viewModel: DepartmentViewModel = viewModel(),
 ) {
-    val state = viewModel.state
+    val state by viewModel.state.collectAsState()
+
     var selectedItemId by remember { mutableStateOf<Int?>(null) }
     var isDropdownVisible by remember { mutableStateOf(false) }
 
@@ -92,8 +95,12 @@ fun DataTable(
 
     TableHeader(
         onSelectedDepartment = { departmentId -> viewModel.onDepartmentSelected(departmentId) },
-        departments = state.departments
+        departments = state.departments,
+        departmentTotalMap = state.departmentTotalMap,
+        selectedDepartment = state.selectedDepartment,
     )
+    
+    Spacer(modifier = Modifier.height(16.dp))
 
     PaginatedDataTable(
         modifier = Modifier
@@ -102,14 +109,13 @@ fun DataTable(
         columns = columns,
         rowHeight = 45.dp,
         contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-//        rowBackgroundColor = { Color(0xFFF2F2F2) }, // Selected row background color
         rowBackgroundColor = { Color(0xFFFBFBFB) },
-        headerBackgroundColor = Color(0xFFFBFBFB),
+        headerBackgroundColor = Color(0xFFF2F2F2),
         footerBackgroundColor = Color(0xFFFBFBFB),
         state = rememberPaginatedDataTableState(10),
     ) {
         state.deliItems.forEach { item ->
-            val isRowSelected = viewModel.selectedRows.contains(item.itemId)
+            val isRowSelected = viewModel.selectedRows.contains(item.deliItem.itemId)
 
             row {
                 cell {
@@ -117,42 +123,42 @@ fun DataTable(
                         modifier = Modifier.padding(8.dp),
                         checked = isRowSelected,
                         onCheckedChange = {
-                            viewModel.onRowSelected(item.itemId, it)
+                            viewModel.onRowSelected(item.deliItem.itemId, it)
                         }
                     )
                 }
                 cell {
-                    Text(item.name)
+                    Text(item.deliItem.name)
                 }
                 cell {
-                    Text(item.unit)
+                    Text(item.deliItem.unit)
                 }
                 cell {
-                    Text("${item.cost}")
+                    Text("${item.deliItem.cost}")
                 }
                 cell {
                     Box {
                         Text(
-                            text = state.deliItemsQuantity[item.itemId]?.toString()
+                            text = "${item.quantity}"
                                 ?: "Enter Quantity",
                             modifier = Modifier
                                 .clickable {
-                                    selectedItemId = item.itemId
+                                    selectedItemId = item.deliItem.itemId
                                     isDropdownVisible = true
                                 }
                                 .padding(8.dp),
-                            color = if (state.deliItemsQuantity[item.itemId] != null) Color.Black else Color.Gray
+                            color = if (item.quantity != null) Color.Black else Color.Gray
                         )
 
                         QuantityInputDropdown(
-                            expanded = isDropdownVisible && selectedItemId == item.itemId,
+                            expanded = isDropdownVisible && selectedItemId == item.deliItem.itemId,
                             onDismiss = {
                                 isDropdownVisible = false
                                 selectedItemId = null
                             },
                             onSave = { newQuantity ->
                                 viewModel.updateQuantity(
-                                    item.itemId,
+                                    item.deliItem.itemId,
                                     newQuantity
                                 )
                             }

@@ -13,4 +13,4 @@ data class DeliItemEntity(
     val cost: Double,
     @PrimaryKey @ColumnInfo(name = "item_id") val itemId: Int,
     @ColumnInfo(name = "department_id") val departmentId: Int,
-)
+) : BaseEntity()

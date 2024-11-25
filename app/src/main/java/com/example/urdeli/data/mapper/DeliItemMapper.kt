@@ -8,6 +8,6 @@ fun DeliItemEntity.toDeliItem(): DeliItem {
         itemId = itemId,
         name = name,
         unit = unit,
-        cost = cost
+        cost = cost,
     )
 }

@@ -36,19 +36,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.urdeli.R
 
 @Composable
 fun TableHeader(
     onSelectedDepartment: (departmentId: Int) -> Unit,
-    departments: Map<Int, String>
+    departments: Map<Int, String>,
+    departmentTotalMap: Map<Int, Double>,
+    selectedDepartment: Int
 ) {
-    var selectedDepartment by remember { mutableStateOf("Bakery Bread") }
-
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -56,12 +54,12 @@ fun TableHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         DepartmentSelector(
-            currentDepartment = selectedDepartment,
+            currentDepartment = departments[selectedDepartment] ?: "Bakery Bread",
             onDepartmentSelected = { department ->
                 onSelectedDepartment(department)
-                selectedDepartment = departments[department] ?: "Bakery Bread"
             },
-            departments = departments
+            departments = departments,
+            departmentTotal = departmentTotalMap[selectedDepartment] ?: 0.0
         )
 
         Row(
@@ -83,17 +81,17 @@ fun TableHeader(
                     modifier = Modifier.size(24.dp)
                 )
             }
-            IconButton(
-                modifier = Modifier
-                    .background(color = Color(0xFFF2F2F2), shape = RoundedCornerShape(30)),
-                onClick = { }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.file_export), // Replace with desired icon
-                    contentDescription = "Export as CSV",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+//            IconButton(
+//                modifier = Modifier
+//                    .background(color = Color(0xFFF2F2F2), shape = RoundedCornerShape(30)),
+//                onClick = {}
+//            ) {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.sync_saved_locally), // Replace with desired icon
+//                    contentDescription = "Save locally",
+//                    modifier = Modifier.size(24.dp)
+//                )
+//            }
             Button(
                 onClick = { /* Handle button click */ },
                 shape = RoundedCornerShape(12.dp),
@@ -168,72 +166,85 @@ fun SearchBar(
 fun DepartmentSelector(
     currentDepartment: String,
     onDepartmentSelected: (Int) -> Unit,
-    departments: Map<Int, String>
+    departments: Map<Int, String>,
+    departmentTotal: Double
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .width(250.dp)
-            .border(
-                width = 1.dp,
-                color = Color.Gray,
-                shape = RoundedCornerShape(25)
-            )
-            .background(
-                color = Color.Transparent,
-                shape = RoundedCornerShape(25.dp)
-            )
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .clickable { expanded = true }
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .width(175.dp)
+                .border(
+                    width = 1.dp,
+                    color = Color.Gray,
+                    shape = RoundedCornerShape(25)
+                )
+                .background(
+                    color = Color.Transparent,
+                    shape = RoundedCornerShape(25.dp)
+                )
         ) {
-            Text(
-                text = currentDepartment,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Black
-            )
-            Icon(
-                imageVector = if (expanded)
-                    Icons.Filled.KeyboardArrowUp
-                else
-                    Icons.Filled.KeyboardArrowDown,
-                contentDescription = "Select department",
-                modifier = Modifier.size(24.dp),
-                tint = Color.Black
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .background(Color.Black)
-                .width(250.dp) // Increased width for dropdown
-        ) {
-            departments.forEach { (id, name) ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = name,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                    },
-                    onClick = {
-                        onDepartmentSelected(id)
-                        expanded = false
-                    },
-                    modifier = Modifier
-                        .background(Color.Black)
-                        .fillMaxWidth()
+            Row(
+                modifier = Modifier
+                    .clickable { expanded = true }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = currentDepartment,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.Black
+                )
+                Icon(
+                    imageVector = if (expanded)
+                        Icons.Filled.KeyboardArrowUp
+                    else
+                        Icons.Filled.KeyboardArrowDown,
+                    contentDescription = "Select department",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Black
                 )
             }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .background(Color.Black)
+                    .width(175.dp)
+            ) {
+                departments.forEach { (id, name) ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = name,
+                                fontSize = 16.sp,
+                                color = Color.White
+                            )
+                        },
+                        onClick = {
+                            onDepartmentSelected(id)
+                            expanded = false
+                        },
+                        modifier = Modifier
+                            .background(Color.Black)
+                            .fillMaxWidth()
+                    )
+                }
+            }
         }
+
+        Text(
+            modifier = Modifier.padding(start = 8.dp, top = 6.dp),
+            text = "€ $departmentTotal",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.DarkGray
+        )
     }
 }

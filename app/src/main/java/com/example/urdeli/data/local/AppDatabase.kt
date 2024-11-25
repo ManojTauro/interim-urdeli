@@ -1,19 +1,32 @@
 package com.example.urdeli.data.local
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.urdeli.data.local.dao.UrdeliDao
+import androidx.room.TypeConverters
+import com.example.urdeli.data.local.dao.DeliItemDao
+import com.example.urdeli.data.local.dao.StocktakeEntryDao
 import com.example.urdeli.data.local.entity.DeliItemEntity
-import com.example.urdeli.data.local.entity.Department
+import com.example.urdeli.data.local.entity.DepartmentEntity
+import com.example.urdeli.data.local.entity.StocktakeEntity
+import com.example.urdeli.data.local.entity.StocktakeEntryEntity
+import java.util.concurrent.Executors
 
 @Database(
-    entities = [Department::class, DeliItemEntity::class],
+    entities = [
+        DepartmentEntity::class,
+        DeliItemEntity::class,
+        StocktakeEntity::class,
+        StocktakeEntryEntity::class
+    ],
     version = 1
 )
+@TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun urdeliDao(): UrdeliDao
+    abstract fun urdeliDao(): DeliItemDao
+    abstract fun stocktakeEntryDao(): StocktakeEntryDao
 
     companion object {
         private const val DATABASE_NAME = "urdeli_db"
@@ -28,6 +41,9 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     .fallbackToDestructiveMigration()
                     .createFromAsset("database/urdeli.db")
+                    .setQueryCallback({ sqlQuery, bindArgs ->
+                        Log.d("RoomQuery", "SQL: $sqlQuery | Args: ${bindArgs.joinToString()}")
+                    }, Executors.newSingleThreadExecutor())
                     .build()
 
                 INSTANCE = instance
