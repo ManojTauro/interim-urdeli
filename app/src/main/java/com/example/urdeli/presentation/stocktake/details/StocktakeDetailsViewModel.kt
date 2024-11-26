@@ -1,4 +1,4 @@
-package com.example.urdeli.presentation.department
+package com.example.urdeli.presentation.stocktake.details
 
 import android.app.Application
 import android.util.Log
@@ -9,6 +9,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.example.urdeli.StocktakeScreenRoute
 import com.example.urdeli.data.remote.DeliItemRepositoryImpl
 import com.example.urdeli.data.remote.StocktakeEntryRepositoryImpl
 import com.example.urdeli.domain.model.StocktakeEntry
@@ -20,7 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class DepartmentViewModel(
+class StocktakeDetailsViewModel(
     application: Application,
     savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(application) {
@@ -30,10 +32,12 @@ class DepartmentViewModel(
     private val stocktakeEntryRepository: StocktakeEntryRepository =
         StocktakeEntryRepositoryImpl(context)
 
-    private val _state = MutableStateFlow(DepartmentState(isLoading = true))
-    val state: StateFlow<DepartmentState> = _state
+    private val store = savedStateHandle.toRoute<StocktakeScreenRoute>()
 
-    //    private val stockTakeId: Int = savedStateHandle["stockTakeId"] ?: throw IllegalStateException("Missing stockTakeId")
+    private val _state = MutableStateFlow(StocktakeStateDetails(isLoading = true))
+    val state: StateFlow<StocktakeStateDetails> = _state
+
+    val storeName: String = store.storeName
     private val _currentStockTakeId = MutableStateFlow(1)
 
     private val departments = mapOf(
@@ -52,6 +56,7 @@ class DepartmentViewModel(
         _state.value = _state.value.copy(
             departments = departments
         )
+        Log.d("StocktakeViewModel", "stockTakeId: $store")
         getDeliItemsWithQuantity()
     }
 

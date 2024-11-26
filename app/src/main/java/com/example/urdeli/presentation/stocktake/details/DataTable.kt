@@ -1,4 +1,4 @@
-package com.example.urdeli.presentation.department
+package com.example.urdeli.presentation.stocktake.details
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.urdeli.shared.DeliItemWithQuantity
 import com.seanproctor.datatable.DataColumn
 import com.seanproctor.datatable.TableColumnWidth
 import com.seanproctor.datatable.material3.PaginatedDataTable
@@ -46,10 +44,13 @@ import com.seanproctor.datatable.paging.rememberPaginatedDataTableState
 
 @Composable
 fun DataTable(
-    viewModel: DepartmentViewModel = viewModel(),
+    deliItems: List<DeliItemWithQuantity>,
+    isRowSelected: (Int) -> Boolean,
+    onRowSelected: (Int, Boolean) -> Unit,
+    onHeaderSelected: (Boolean) -> Unit,
+    isHeaderSelected: Boolean,
+    updateQuantity: (Int, String) -> Unit
 ) {
-    val state by viewModel.state.collectAsState()
-
     var selectedItemId by remember { mutableStateOf<Int?>(null) }
     var isDropdownVisible by remember { mutableStateOf(false) }
 
@@ -59,8 +60,8 @@ fun DataTable(
         ) {
             Checkbox(
                 modifier = Modifier.padding(8.dp),
-                checked = viewModel.isHeaderSelected,
-                onCheckedChange = { viewModel.onHeaderSelected(it) },
+                checked = isHeaderSelected,
+                onCheckedChange = { onHeaderSelected(it) },
             )
         },
         DataColumn(
@@ -93,15 +94,6 @@ fun DataTable(
         },
     )
 
-    TableHeader(
-        onSelectedDepartment = { departmentId -> viewModel.onDepartmentSelected(departmentId) },
-        departments = state.departments,
-        departmentTotalMap = state.departmentTotalMap,
-        selectedDepartment = state.selectedDepartment,
-    )
-    
-    Spacer(modifier = Modifier.height(16.dp))
-
     PaginatedDataTable(
         modifier = Modifier
             .fillMaxSize()
@@ -114,16 +106,14 @@ fun DataTable(
         footerBackgroundColor = Color(0xFFFBFBFB),
         state = rememberPaginatedDataTableState(10),
     ) {
-        state.deliItems.forEach { item ->
-            val isRowSelected = viewModel.selectedRows.contains(item.deliItem.itemId)
-
+        deliItems.forEach { item ->
             row {
                 cell {
                     Checkbox(
                         modifier = Modifier.padding(8.dp),
-                        checked = isRowSelected,
+                        checked = isRowSelected(item.deliItem.itemId),
                         onCheckedChange = {
-                            viewModel.onRowSelected(item.deliItem.itemId, it)
+                            onRowSelected(item.deliItem.itemId, it)
                         }
                     )
                 }
@@ -157,7 +147,7 @@ fun DataTable(
                                 selectedItemId = null
                             },
                             onSave = { newQuantity ->
-                                viewModel.updateQuantity(
+                                updateQuantity(
                                     item.deliItem.itemId,
                                     newQuantity
                                 )

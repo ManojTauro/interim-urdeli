@@ -1,4 +1,4 @@
-package com.example.urdeli.ui.screens
+package com.example.urdeli.presentation.stocktake.listing
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,22 +37,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun StocktakeScreen(
+fun StocktakeListingScreen(
 //    stocktakeData: List<StocktakeData> = emptyList(),
     onNewClicked: () -> Unit,
     onEditClicked: (StocktakeData) -> Unit,
-    onGotoNextScreen: (StocktakeData) -> Unit
+    onGotoStockTakeScreen: (stocktakeId: Int, storeName: String) -> Unit
 ) {
     val (showModal, setShowModal) = remember { mutableStateOf(false) }
 
     val stocktakeData = listOf(
         StocktakeData(
+            stocktakeId = 1,
             storeName = "Store 1"
         ),
         StocktakeData(
+            stocktakeId = 2,
             storeName = "Store 2"
         ),
         StocktakeData(
+            stocktakeId = 3,
             storeName = "Store 3"
         )
     )
@@ -106,13 +109,12 @@ fun StocktakeScreen(
                 .padding(16.dp),
             columns = GridCells.FixedSize(500.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-//            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(stocktakeData) { stocktakeItem ->
                 StocktakeCard(
                     stocktakeData = stocktakeItem,
                     onEditClicked = onEditClicked,
-                    onGotoNextScreen = onGotoNextScreen
+                    onGotoStockTakeScreen = onGotoStockTakeScreen
                 )
             }
         }
@@ -133,7 +135,7 @@ fun StocktakeScreen(
 fun StocktakeCard(
     stocktakeData: StocktakeData,
     onEditClicked: (StocktakeData) -> Unit,
-    onGotoNextScreen: (StocktakeData) -> Unit
+    onGotoStockTakeScreen: (stocktakeId: Int, storeName: String) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -176,13 +178,13 @@ fun StocktakeCard(
                     Text("Edit")
                 }
                 Button(
-                    onClick = { onGotoNextScreen(stocktakeData) },
+                    onClick = { onGotoStockTakeScreen(stocktakeData.stocktakeId, stocktakeData.storeName) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black,
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Go to next")
+                    Text("Go to Stocktake")
                 }
             }
         }
@@ -257,7 +259,8 @@ fun StocktakeModal(
 }
 
 data class StocktakeData(
+    val stocktakeId: Int,
     val storeName: String,
     val balance: Double? = 0.0,
-    val currency: String? = "USD"
+    val currency: String? = "EUR"
 )

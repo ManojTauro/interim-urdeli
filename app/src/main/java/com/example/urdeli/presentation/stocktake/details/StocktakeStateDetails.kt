@@ -1,8 +1,8 @@
-package com.example.urdeli.presentation.department
+package com.example.urdeli.presentation.stocktake.details
 
 import com.example.urdeli.shared.DeliItemWithQuantity
 
-data class DepartmentState(
+data class StocktakeStateDetails(
     val deliItems: List<DeliItemWithQuantity> = emptyList(),
     val departments: Map<Int, String> = emptyMap(),
     val departmentTotalMap: Map<Int, Double> = emptyMap(),

@@ -1,4 +1,4 @@
-package com.example.urdeli.presentation.department
+package com.example.urdeli.presentation.stocktake.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -81,17 +81,6 @@ fun TableHeader(
                     modifier = Modifier.size(24.dp)
                 )
             }
-//            IconButton(
-//                modifier = Modifier
-//                    .background(color = Color(0xFFF2F2F2), shape = RoundedCornerShape(30)),
-//                onClick = {}
-//            ) {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.sync_saved_locally), // Replace with desired icon
-//                    contentDescription = "Save locally",
-//                    modifier = Modifier.size(24.dp)
-//                )
-//            }
             Button(
                 onClick = { /* Handle button click */ },
                 shape = RoundedCornerShape(12.dp),
