@@ -5,6 +5,7 @@ import com.example.urdeli.data.local.AppDatabase
 import com.example.urdeli.data.mapper.toStocktakeEntryEntity
 import com.example.urdeli.domain.model.StocktakeEntry
 import com.example.urdeli.domain.repository.StocktakeEntryRepository
+import com.example.urdeli.shared.StocktakeEntryWithDeliItem
 
 class StocktakeEntryRepositoryImpl(
     context: Context
@@ -24,5 +25,9 @@ class StocktakeEntryRepositoryImpl(
             val newQuantity = stocktakeEntryEntity.quantity + stockTakeEntry.quantity
             dao.updateStockEntry(stocktakeEntryEntity.copy(quantity = newQuantity))
         } else dao.insertStockEntry(stockTakeEntry.toStocktakeEntryEntity())
+    }
+
+    override suspend fun getALlStockEntriesWithDeliItems(stocktakeId: Int): List<StocktakeEntryWithDeliItem> {
+        return dao.getALlStockEntriesWithDeliItems(stocktakeId)
     }
 }

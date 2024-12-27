@@ -18,9 +18,13 @@ import com.example.urdeli.domain.repository.DeliItemRepository
 import com.example.urdeli.domain.repository.StocktakeEntryRepository
 import com.example.urdeli.util.Resource
 import com.example.urdeli.util.roundToTwoDecimalPlaces
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.File
+import java.io.FileOutputStream
 
 class StocktakeDetailsViewModel(
     application: Application,
@@ -32,12 +36,12 @@ class StocktakeDetailsViewModel(
     private val stocktakeEntryRepository: StocktakeEntryRepository =
         StocktakeEntryRepositoryImpl(context)
 
-    private val store = savedStateHandle.toRoute<StocktakeScreenRoute>()
+    private val storeDetails = savedStateHandle.toRoute<StocktakeScreenRoute>()
 
     private val _state = MutableStateFlow(StocktakeStateDetails(isLoading = true))
     val state: StateFlow<StocktakeStateDetails> = _state
 
-    val storeName: String = store.storeName
+    val storeName: String = storeDetails.storeName
     private val _currentStockTakeId = MutableStateFlow(1)
 
     private val departments = mapOf(
@@ -56,7 +60,7 @@ class StocktakeDetailsViewModel(
         _state.value = _state.value.copy(
             departments = departments
         )
-        Log.d("StocktakeViewModel", "stockTakeId: $store")
+        Log.d("StocktakeViewModel", "stockTakeId: $storeDetails")
         getDeliItemsWithQuantity()
     }
 
@@ -92,7 +96,7 @@ class StocktakeDetailsViewModel(
 
         if (quantity < 0) return
 
-        Log.d("DepartmentViewModel", "selectedDepartment: ${_state.value.selectedDepartment}")
+        Log.d("StocktakeDetailsViewModel", "selectedDepartment: ${_state.value.selectedDepartment}")
 
         viewModelScope.launch {
             stocktakeEntryRepository.updateQuantity(
@@ -113,6 +117,76 @@ class StocktakeDetailsViewModel(
 
     fun updateStockTakeId(stockTakeId: Int) {
         _currentStockTakeId.value = stockTakeId
+    }
+
+    fun export() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val outputFile: File = File.createTempFile("stocktake", ".xlsx")
+            val items = stocktakeEntryRepository.getALlStockEntriesWithDeliItems(storeDetails.stocktakeId)
+            val departmentMap = items.groupBy { it.deliItem.departmentId }
+
+            Log.d("StocktakeDetailsViewModel", "departmentMap: $departmentMap")
+
+            val workbook = XSSFWorkbook()
+            val sheet = workbook.createSheet("Data")
+
+            val storeNameRow = sheet.createRow(0)
+            storeNameRow.createCell(0)
+                .setCellValue("STORE NAME: ${storeDetails.storeName}")
+
+            var rowIndex = 2
+
+            val headerStyle = workbook.createCellStyle().apply {
+                setFont(workbook.createFont().apply {
+                    bold = true
+                })
+            }
+
+            departmentMap.forEach { (departmentId, entries) ->
+                // Write department name as a heading
+                val departmentName = departments[departmentId] ?: "Unknown Department"
+
+                // Write column headers
+                val headerRow = sheet.createRow(rowIndex++)
+                val headers = listOf("Department: $departmentName", "Cost", "Unit", "Quantity", "Total")
+                headers.forEachIndexed { index, header ->
+                    val cell = headerRow.createCell(index)
+                    cell.setCellValue(header)
+                    cell.cellStyle = headerStyle
+                }
+
+                // Write items under the department
+                var departmentTotal = 0.0
+                entries.forEach { entry ->
+                    val dataRow = sheet.createRow(rowIndex++)
+                    dataRow.createCell(0).setCellValue(entry.deliItem.name)
+                    dataRow.createCell(1).setCellValue(entry.deliItem.cost)
+                    dataRow.createCell(2).setCellValue(entry.deliItem.unit)
+                    dataRow.createCell(3).setCellValue(entry.quantity.toDouble())
+                    val itemTotal = entry.quantity * entry.deliItem.cost
+                    departmentTotal += itemTotal
+                    dataRow.createCell(4).setCellValue("EUR $itemTotal")
+                }
+
+                sheet.createRow(rowIndex++)
+                val totalRow = sheet.createRow(rowIndex++)
+                val cell1 = totalRow.createCell(0)
+                cell1.cellStyle = headerStyle
+                cell1.setCellValue("Department Total")
+
+                val cell4 = totalRow.createCell(4)
+                cell4.cellStyle = headerStyle
+                cell4.setCellValue("EUR $departmentTotal")
+
+                rowIndex++
+            }
+
+            // Write to the output file
+            FileOutputStream(outputFile).use { fos ->
+                workbook.write(fos)
+            }
+            workbook.close()
+        }
     }
 
     private fun getDeliItemsWithQuantity(
@@ -149,7 +223,6 @@ class StocktakeDetailsViewModel(
                         is Resource.Loading -> {}
                     }
                 }
-
         }
     }
 

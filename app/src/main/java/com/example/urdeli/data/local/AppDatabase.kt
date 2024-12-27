@@ -8,17 +8,18 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.urdeli.data.local.dao.DeliItemDao
 import com.example.urdeli.data.local.dao.StocktakeEntryDao
+import com.example.urdeli.data.local.dao.StoreDao
 import com.example.urdeli.data.local.entity.DeliItemEntity
 import com.example.urdeli.data.local.entity.DepartmentEntity
-import com.example.urdeli.data.local.entity.StocktakeEntity
 import com.example.urdeli.data.local.entity.StocktakeEntryEntity
+import com.example.urdeli.data.local.entity.StoreEntity
 import java.util.concurrent.Executors
 
 @Database(
     entities = [
         DepartmentEntity::class,
         DeliItemEntity::class,
-        StocktakeEntity::class,
+        StoreEntity::class,
         StocktakeEntryEntity::class
     ],
     version = 1
@@ -27,6 +28,7 @@ import java.util.concurrent.Executors
 abstract class AppDatabase : RoomDatabase() {
     abstract fun urdeliDao(): DeliItemDao
     abstract fun stocktakeEntryDao(): StocktakeEntryDao
+    abstract fun storeDao(): StoreDao
 
     companion object {
         private const val DATABASE_NAME = "urdeli_db"

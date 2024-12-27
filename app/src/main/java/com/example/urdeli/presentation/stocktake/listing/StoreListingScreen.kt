@@ -1,6 +1,7 @@
 package com.example.urdeli.presentation.stocktake.listing
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,9 +23,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,30 +37,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.urdeli.domain.model.Store
 
 @Composable
 fun StocktakeListingScreen(
-//    stocktakeData: List<StocktakeData> = emptyList(),
+    viewModel: StoreListingViewModel = viewModel(),
     onNewClicked: () -> Unit,
-    onEditClicked: (StocktakeData) -> Unit,
+    onEditClicked: (Store) -> Unit,
     onGotoStockTakeScreen: (stocktakeId: Int, storeName: String) -> Unit
 ) {
     val (showModal, setShowModal) = remember { mutableStateOf(false) }
-
-    val stocktakeData = listOf(
-        StocktakeData(
-            stocktakeId = 1,
-            storeName = "Store 1"
-        ),
-        StocktakeData(
-            stocktakeId = 2,
-            storeName = "Store 2"
-        ),
-        StocktakeData(
-            stocktakeId = 3,
-            storeName = "Store 3"
-        )
-    )
+    val stores = viewModel.stores.collectAsState(initial = emptyList()).value
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -110,20 +100,28 @@ fun StocktakeListingScreen(
             columns = GridCells.FixedSize(500.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(stocktakeData) { stocktakeItem ->
+            items(stores) { stocktakeItem ->
                 StocktakeCard(
-                    stocktakeData = stocktakeItem,
+                    store = stocktakeItem,
                     onEditClicked = onEditClicked,
                     onGotoStockTakeScreen = onGotoStockTakeScreen
                 )
             }
         }
 
+        if (stores.isEmpty()) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(text = "No Stocktakes found.")
+            }
+        }
+
+
+
         if (showModal) {
             StocktakeModal(
                 onDismiss = { setShowModal(false) },
-                onSave = { newStocktakeData ->
-//                    onSaveNewStocktake(newStocktakeData)
+                onSave = { storeName, storeLocation, supervisor ->
+                    viewModel.addStore(storeName, storeLocation, supervisor)
                     setShowModal(false)
                 }
             )
@@ -133,8 +131,8 @@ fun StocktakeListingScreen(
 
 @Composable
 fun StocktakeCard(
-    stocktakeData: StocktakeData,
-    onEditClicked: (StocktakeData) -> Unit,
+    store: Store,
+    onEditClicked: (Store) -> Unit,
     onGotoStockTakeScreen: (stocktakeId: Int, storeName: String) -> Unit
 ) {
     Card(
@@ -151,14 +149,14 @@ fun StocktakeCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                stocktakeData.storeName,
+                store.storeName,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     color = Color(0xFF333333),
                     fontWeight = FontWeight.Bold
                 )
             )
             Text(
-                "Total: ${stocktakeData.balance} ${stocktakeData.currency}",
+                "Total: ${0.0} EUR",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color(0xFF333333),
                 )
@@ -168,7 +166,7 @@ fun StocktakeCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = { onEditClicked(stocktakeData) },
+                    onClick = { onEditClicked(store) },
                     modifier = Modifier.padding(end = 8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFE0E0E0),
@@ -178,7 +176,7 @@ fun StocktakeCard(
                     Text("Edit")
                 }
                 Button(
-                    onClick = { onGotoStockTakeScreen(stocktakeData.stocktakeId, stocktakeData.storeName) },
+                    onClick = { onGotoStockTakeScreen(store.stocktakeId!!, store.storeName) },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Black,
                         contentColor = Color.White
@@ -194,54 +192,50 @@ fun StocktakeCard(
 @Composable
 fun StocktakeModal(
     onDismiss: () -> Unit,
-    onSave: (StocktakeData) -> Unit
+    onSave: (
+        storeName: String,
+        storeLocation: String,
+        supervisor: String
+    ) -> Unit
 ) {
     var storeName by remember { mutableStateOf("") }
-    var balance by remember { mutableStateOf(0.0) }
-    var currency by remember { mutableStateOf("USD") }
-    var expirationDate by remember { mutableStateOf("") }
+    var storeLocation by remember { mutableStateOf("") }
+    var supervisor by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Card") },
+        title = { Text("New Stocktake") },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxWidth(0.8f),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextField(
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
                     value = storeName,
                     onValueChange = { storeName = it },
                     label = { Text("Store Name") }
                 )
-                TextField(
-                    value = balance.toString(),
-                    onValueChange = { balance = it.toDoubleOrNull() ?: 0.0 },
-                    label = { Text("Balance") }
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = storeLocation,
+                    onValueChange = { storeLocation = it },
+                    label = { Text("Store Location") }
                 )
-                TextField(
-                    value = currency,
-                    onValueChange = { currency = it },
-                    label = { Text("Currency") }
-                )
-                TextField(
-                    value = expirationDate,
-                    onValueChange = { expirationDate = it },
-                    label = { Text("Expiration Date") }
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = supervisor,
+                    onValueChange = { supervisor = it },
+                    label = { Text("Supervisor") }
                 )
             }
         },
         confirmButton = {
             Button(
+
                 onClick = {
-//                    onSave(
-//                        CardData(
-//                            storeName = storeName,
-//                            balance = balance,
-//                            currency = currency,
-//                            expirationDate = expirationDate
-//                        )
-//                    )
+                    onSave(storeName, storeLocation, supervisor)
                     onDismiss()
                 }
             ) {
@@ -258,9 +252,11 @@ fun StocktakeModal(
     )
 }
 
-data class StocktakeData(
+data class StoreData(
     val stocktakeId: Int,
     val storeName: String,
+    val storeLocation: String,
+    val supervisor: String,
     val balance: Double? = 0.0,
     val currency: String? = "EUR"
 )

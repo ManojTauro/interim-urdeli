@@ -73,7 +73,7 @@ fun StocktakeScreen(
                             color = Color.Black,
                             shape = RoundedCornerShape(30)
                         ),
-                    onClick = { }
+                    onClick = { viewModel.export() }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.file_export), // Replace with desired icon
